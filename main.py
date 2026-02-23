@@ -1,3 +1,4 @@
+import argparse
 from pathlib import Path
 
 from database import get_connection, init_db, clear_holdings, insert_holdings
@@ -10,7 +11,21 @@ def format_money(x: float) -> str:
 
 
 def main() -> None:
-    csv_path = Path("data/sample_portfolio.csv")
+    parser = argparse.ArgumentParser(description="PortfolioOps: CSV → SQLite → analytics report")
+    parser.add_argument(
+        "--file",
+        type=str,
+        default="data/sample_portfolio.csv",
+        help="Path to portfolio holdings CSV",
+    )
+    parser.add_argument(
+        "--reset-db",
+        action="store_true",
+        help="Clear holdings table before inserting new rows",
+    )
+    args = parser.parse_args()
+
+    csv_path = Path(args.file)
 
     df = load_csv(csv_path)
     df = clean_and_validate(df)
@@ -18,14 +33,18 @@ def main() -> None:
 
     conn = get_connection()
     init_db(conn)
-    clear_holdings(conn)
+
+    if args.reset_db:
+        clear_holdings(conn)
+
     insert_holdings(conn, rows)
 
     summary = portfolio_summary(conn)
     flags = risk_flags(conn)
 
     total = summary["total"]
-    print("\nPortfolioOps Report")
+    print("\n=== PortfolioOps Report ===")
+    print(f"Input File: {csv_path}")
     print(f"Total Portfolio Value: {format_money(total)}\n")
 
     print("Asset Allocation:")
