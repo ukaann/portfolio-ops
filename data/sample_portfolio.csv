@@ -1,0 +1,6 @@
+ticker,shares,price,asset_class
+AAPL,50,180,Equity
+MSFT,30,330,Equity
+GOOGL,10,140,Equity
+TSLA,5,250,Equity
+BND,100,72,Fixed Income
